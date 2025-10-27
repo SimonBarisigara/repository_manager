@@ -16,7 +16,7 @@ db = {
     'host': 'localhost',
     'database': 'RESEARCH_PAPER_REPO',
     'user': 'root',
-    'password': 'srujan123@RAI'
+    'password': ''
 }
 
 try:
@@ -30,8 +30,8 @@ cursor = connection.cursor()
 
 cursor.execute('''CREATE TABLE IF NOT EXISTS users
                 (id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(255) UNIQUE,
-                password VARCHAR(255))''')
+                username VARCHAR(191) UNIQUE,
+                password VARCHAR(64))''')
 
 @app.route('/') 
 def login_redirect():
