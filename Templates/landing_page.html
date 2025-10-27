@@ -1,129 +1,397 @@
 <!DOCTYPE html>
-
 <html>
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>DataNest</title>
+    <title>DataNest | Academic Repository</title>
     <link rel="icon" type="image/x-icon" href='{{url_for('static',filename='images/icon.jpeg')}}'>
-    <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="" />
+    
     <style>
-      body {
-        background: url('{{ url_for('static', filename='images/bc6.jpg') }}');
-        background-repeat: none;
-        background-size: cover;
+      /* --- Modern Color Palette --- */
+      :root {
+        --color-primary: #0077B6; /* Deep Blue - Modern, Trustworthy */
+        --color-secondary: #00B4D8; /* Light Blue - Accent */
+        --color-background: #F8F9FA; /* Off-White/Light Gray */
+        --color-text-dark: #212529;
+        --color-text-light: #6C757D;
+        --color-success: #28A745;
       }
+
+      /* --- General Reset & Typography --- */
       body {
-        font-family: Arial, sans-serif;
-        background-color: #190439;
-        color: #ffffff  ;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         margin: 0;
-        display: flex;
-        flex-direction: column;
-        row-gap: 100px;
+        padding: 0;
+        background-color: var(--color-background);
+        color: var(--color-text-dark);
+        line-height: 1.6;
+      }
+      
+      a {
+        text-decoration: none;
+        color: var(--color-primary);
+        transition: color 0.3s;
+      }
+      a:hover {
+        color: var(--color-secondary);
       }
 
-      .page-heading {
+      /* --- Header/Navigation --- */
+      .navbar {
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        padding: 15px 5%;
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        padding: 15px;
-        padding-left: 100px;
-        padding-right: 90px;
+        align-items: center;
+      }
+      .logo-text {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--color-primary);
+      }
+      .nav-links {
+        display: flex;
+        gap: 20px;
+      }
+      .nav-links a {
+        color: var(--color-text-dark);
+        font-weight: 500;
+        padding: 5px 0;
+        position: relative;
+      }
+      .nav-links a::after {
+          content: '';
+          position: absolute;
+          width: 0;
+          height: 2px;
+          background-color: var(--color-primary);
+          bottom: -5px;
+          left: 0;
+          transition: width 0.3s;
+      }
+      .nav-links a:hover::after {
+          width: 100%;
       }
 
-      h1 {
-        font-size: 2rem;
-        transition: 0.3s;
-      }
-
+      /* --- Login Button --- */
       .login-button {
-        background: rgb(63, 94, 251);
-        background: radial-gradient(
-          circle,
-          rgba(63, 94, 251, 1) 0%,
-          rgba(70, 181, 252, 1) 100%
-        );
+        background-color: var(--color-success);
+        color: white;
         border: none;
-        color: #fff;
-        padding: 30px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        border-radius: 5px;
-        font-weight: bold;
-        font-size: 1rem;
-        transition: 0.3s;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.1s;
       }
       .login-button:hover {
-        box-shadow: 0px 0px 7px #46b5fc;
+        background-color: #1e7e34;
+        transform: translateY(-1px);
       }
 
-      h1:hover {
-        color: rgb(63, 94, 251);
-        color: radial-gradient(
-          circle,
-          rgba(63, 94, 251, 1) 0%,
-          rgba(70, 181, 252, 1) 100%
-        );
+      /* --- Hero Section (The main search area) --- */
+      .hero-section {
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+        color: white;
+        padding: 80px 5%;
+        text-align: center;
+      }
+      .hero-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .hero-subtitle {
+        font-size: 1.2rem;
+        font-weight: 300;
+        margin-bottom: 40px;
+        opacity: 0.9;
       }
 
-      p {
-        align-self: center;
-        font-size: 1.5rem;
-      }
-
-      .contribution-div {
+      .search-container {
         display: flex;
-        flex-direction: column;
-        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 650px;
+        margin: 0 auto;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       }
-
-      .contribute-button {
-        background: rgb(0, 66, 171);
-        background: radial-gradient(
-          circle,
-          rgba(0, 66, 171, 1) 34%,
-          rgba(107, 160, 255, 1) 100%
-        );
+      .search-container input[type="text"] {
+        flex-grow: 1;
+        padding: 15px 20px;
         border: none;
-        color: #fff;
-        padding: 30px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        border-radius: 5px;
-        font-weight: bold;
         font-size: 1rem;
-        transition: all 0.2s;
+        color: var(--color-text-dark);
+      }
+      .search-container button {
+        background-color: var(--color-success);
+        color: white;
+        border: none;
+        padding: 15px 25px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: background-color 0.3s;
+      }
+      .search-container button:hover {
+        background-color: #1e7e34;
+      }
+      
+      /* --- Content Grid (Browse/Stats) --- */
+      .content-grid {
+        padding: 60px 5%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        max-width: 1200px; /* New Max Width for content */
+        margin: 0 auto;
+      }
+      .card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s, box-shadow 0.3s;
+        border-top: 5px solid var(--color-primary);
+      }
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+      }
+      .card-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--color-primary);
+        margin-bottom: 15px;
+      }
+      .card ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+      }
+      .card ul li {
+          padding: 8px 0;
+          border-bottom: 1px dashed #eee;
+      }
+      .card ul li:last-child {
+          border-bottom: none;
+      }
+      .card a {
+          font-weight: 400;
+          display: block;
+      }
+      
+      /* --- Recent Submissions Section --- */
+      .recent-submissions {
+          padding: 40px 5%;
+          max-width: 1200px;
+          margin: 0 auto;
+      }
+      .submissions-title {
+          font-size: 1.8rem;
+          font-weight: 600;
+          color: var(--color-text-dark);
+          margin-bottom: 25px;
+          border-bottom: 2px solid var(--color-primary);
+          padding-bottom: 10px;
+          display: inline-block;
+      }
+      .document-list {
+          background-color: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          list-style: none;
+          padding: 0;
+          margin: 0;
+      }
+      .document-item {
+          padding: 15px 20px;
+          border-bottom: 1px solid #eee;
+          transition: background-color 0.2s;
+      }
+      .document-item:last-child {
+          border-bottom: none;
+      }
+      .document-item:hover {
+          background-color: #f5f5f5;
+      }
+      .doc-title {
+          font-weight: 500;
+          font-size: 1.1rem;
+          color: var(--color-primary);
+          margin-bottom: 5px;
+      }
+      .doc-meta {
+          font-size: 0.9rem;
+          color: var(--color-text-light);
+      }
+      .doc-meta span:not(:last-child)::after {
+          content: ' | ';
+          margin: 0 5px;
+          color: #ccc;
       }
 
-      .contribute-button:hover {
-        border-bottom: solid 1px white;
-        padding: 32px;
-        padding-top: 12px;
-        padding-bottom: 12px;
+      /* --- Footer --- */
+      .footer {
+        background-color: var(--color-text-dark);
+        color: white;
+        text-align: center;
+        padding: 20px 5%;
+        font-size: 0.9rem;
+      }
+      .footer a {
+          color: var(--color-secondary);
+      }
+
+      /* --- Mobile Responsiveness --- */
+      @media (max-width: 768px) {
+        .navbar {
+          flex-direction: column;
+          align-items: flex-start;
+          padding: 15px 5%;
+        }
+        .nav-links {
+          flex-direction: column;
+          width: 100%;
+          gap: 5px;
+          margin-top: 10px;
+          display: none; /* Can be handled with a mobile menu toggle */
+        }
+        .navbar a:last-child {
+            margin-top: 10px;
+        }
+        .hero-section {
+          padding: 60px 5%;
+        }
+        .hero-title {
+          font-size: 2rem;
+        }
+        .search-container {
+          flex-direction: column;
+        }
+        .search-container button {
+          border-radius: 0 0 8px 8px;
+          padding: 12px 25px;
+        }
+        .search-container input[type="text"] {
+          border-radius: 8px 8px 0 0;
+        }
+        .recent-submissions {
+            padding: 30px 5%;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="page-heading">
-      <h1>DataNest</h1>
-      <form action="/login" ,method="post">
-        <button type="submit" class="login-button">Login</button>
+
+    <header class="navbar">
+      <div class="logo-text">DataNest</div>
+      <div class="nav-links">
+        <a href="#">About</a>
+        <a href="#">Statistics</a>
+        <a href="#">Help</a>
+      </div>
+      <a href="{{ url_for('login') }}" class="login-button">Login</a>
+    </header>
+
+    <section class="hero-section">
+      <h1 class="hero-title">Preserving Academic Contributions.</h1>
+      <p class="hero-subtitle">Discover, Share, and Preserve research across all departments and disciplines.</p>
+      
+      <form action="/search" method="get" class="search-container">
+        <input type="text" name="query" placeholder="Search by Title, Author, or Keyword..." required/>
+        <button type="submit">Search</button>
       </form>
-    </div>
-    <p>Preserving Academic Contributions, Fueling Intellectual Discovery...</p>
+    </section>
 
-    <div class="contribution-div">
-      <p>Help Us Be Better By Contributing</p>
-      <a
-        href="https://github.com/Srujan-rai/Research_paper_repository_management_system.git"
-      >
-        <button class="contribute-button">Contribute</button>
-      </a>
-    </div>
+    <section class="content-grid">
+        
+      <div class="card">
+        <div class="card-title">Browse Collections</div>
+        <ul>
+          <li><a href="#">Annual Reports & Strategy Documents (50)</a></li>
+          <li><a href="#">Journals & Conference Papers (1,240)</a></li>
+          <li><a href="#">Book Chapters & Monographs (310)</a></li>
+          <li><a href="#">Theses & Dissertations (590)</a></li>
+          <li><a href="#">Funded Projects & Patents (125)</a></li>
+        </ul>
+      </div>
 
-    <script src="" async defer></script>
+      <div class="card">
+        <div class="card-title">Popular Subjects</div>
+        <ul>
+          <li><a href="#">Computer Science & AI (410)</a></li>
+          <li><a href="#">Agricultural Economics (320)</a></li>
+          <li><a href="#">Civil & Structural Engineering (280)</a></li>
+          <li><a href="#">Biotechnology & Health (210)</a></li>
+          <li><a href="#">Business & Management (190)</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Quick Stats</div>
+        <p style="font-size: 2.5rem; font-weight: 700; color: var(--color-secondary); margin: 0;">2,855</p>
+        <p style="color: var(--color-text-light); margin-top: 5px;">Total Records</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
+        <p style="font-size: 1.5rem; font-weight: 600; color: var(--color-success); margin: 0;">980</p>
+        <p style="color: var(--color-text-light); margin-top: 5px;">Records Added This Year</p>
+      </div>
+
+    </section>
+    
+    <section class="recent-submissions">
+        <h2 class="submissions-title">Recently Added Documents</h2>
+        
+        <ul class="document-list">
+            <li class="document-item">
+                <a href="/document/1001" class="doc-title">Optimizing Neural Networks for Predictive Climate Modeling in East Africa</a>
+                <p class="doc-meta">
+                    <span>Authors: K. Nsubuga, J. Okello</span>
+                    <span>Type: Journal</span>
+                    <span>Date: Oct 25, 2025</span>
+                    <span>Department: Computer Science</span>
+                </p>
+            </li>
+            <li class="document-item">
+                <a href="/document/1002" class="doc-title">Sustainable Irrigation Techniques for Smallholder Farms in Arid Regions</a>
+                <p class="doc-meta">
+                    <span>Authors: A. Mutesi</span>
+                    <span>Type: Conference</span>
+                    <span>Date: Oct 20, 2025</span>
+                    <span>Department: Agricultural Engineering</span>
+                </p>
+            </li>
+            <li class="document-item">
+                <a href="/document/1003" class="doc-title">A New Approach to Multi-Factor Authentication Using Blockchain Technology (Patent Application)</a>
+                <p class="doc-meta">
+                    <span>Authors: S. Barisigara</span>
+                    <span>Type: Patent</span>
+                    <span>Date: Oct 15, 2025</span>
+                    <span>Department: Electrical Engineering</span>
+                </p>
+            </li>
+            <li class="document-item">
+                <a href="/document/1004" class="doc-title">The Role of Microfinance in Post-Conflict Economic Recovery: A Case Study</a>
+                <p class="doc-meta">
+                    <span>Authors: L. Kalema, P. Ssekitto</span>
+                    <span>Type: Book Chapter</span>
+                    <span>Date: Oct 12, 2025</span>
+                    <span>Department: Business & Management</span>
+                </p>
+            </li>
+        </ul>
+        <div style="text-align: center; margin-top: 25px;">
+             <a href="/browse/recent" style="font-weight: 600;">View All Recent Submissions &rarr;</a>
+        </div>
+    </section>
+
+    <footer class="footer">
+      &copy; 2025 DataNest Institutional Repository. | <a href="#">Privacy Policy</a> | <a href="#">Contact</a>
+    </footer>
+
   </body>
 </html>

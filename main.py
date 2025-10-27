@@ -89,7 +89,7 @@ def admin():
         if 'department' in request.form: 
             department = request.form['department']
             department_id_value = department_id.get(department, None)
-            tables = ['Journal', 'Conference', 'BookChapter', 'FundedResearchProject', 'ResearchProposalSubmitted', 'Consultancy', 'ProductDevelopment', 'Patent', 'FDPWORKSHOPSEMINAR', 'MOUCS', 'AchievementsAndAwards', 'MOUS', 'FundedStudentProject']
+            tables = ['Journal', 'Conference', 'BookChapter', 'FundedResearchProject', 'ResearchProposalSubmitted', 'Consultancy', 'ProductDevelopment', 'Patent', 'FDPWORKSHOPSEMINAR', 'mouc', 'AchievementsAndAwards', 'MOUS', 'FundedStudentProject']
             counts = []
             for table in tables:
                 cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE DEPARTMENT_ID=%s", (department_id_value,))
@@ -401,11 +401,11 @@ def user():
                 print("Department ID not found for department:", department) 
                 
                 
-        if 'MOUCS' in selected_options:
-            mou_values=entered_values['MOUCS']
+        if 'mouc' in selected_options:
+            mou_values=entered_values['mouc']
             department_id_value = department_id.get(department, None)
             if department_id_value is not None:
-                insert_statement="INSERT INTO MOUCS (DEPARTMENT_ID, DATE, MAJOR_AREA, TOPIC, DURATION, CERTIFIED_BY, ATTENDED_BY_FACULTY, ATTENDED_BY_STUDENT)VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
+                insert_statement="INSERT INTO mouc (DEPARTMENT_ID, DATE, MAJOR_AREA, TOPIC, DURATION, CERTIFIED_BY, ATTENDED_BY_FACULTY, ATTENDED_BY_STUDENT)VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
                 data=(
                     department_id_value,
                     mou_values['Date'],
