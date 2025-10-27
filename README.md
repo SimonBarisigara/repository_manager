@@ -53,11 +53,6 @@ python app.py
 
 That's it you are good to go! Looking forward to your contributions.
 
-## Contributors
-<a href="https://github.com/Srujan-rai/Research_paper_repository_management_system/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Srujan-rai/Research_paper_repository_management_system" />
-</a>
-
 <br />
 <br />
 
