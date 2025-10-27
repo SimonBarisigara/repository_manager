@@ -1,6 +1,7 @@
 import mysql.connector
-from flask import Flask, render_template, redirect, url_for, request,jsonify
+from flask import Flask, render_template, redirect, url_for, request, jsonify, session
 import hashlib
+from functools import wraps
 
 department_id={
     "AIML":0,
@@ -11,6 +12,7 @@ department_id={
 }
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'  # Add a secret key for session management
 
 db = {
     'host': 'localhost',
@@ -28,6 +30,14 @@ except mysql.connector.Error as e:
 
 cursor = connection.cursor()
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 cursor.execute('''CREATE TABLE IF NOT EXISTS users
                 (id INT AUTO_INCREMENT PRIMARY KEY,
                 username VARCHAR(191) UNIQUE,
@@ -40,27 +50,86 @@ def login_redirect():
 
     
 
+# @app.route('/login', methods=["GET", "POST"])
+# def login():
+#     if request.method == "POST":
+#         username = request.form["username"]
+#         password = request.form["password"]
+#         if username!='':
+#             cursor.execute("SELECT password FROM users WHERE username=%s", (username,))
+#             user = cursor.fetchone()
+
+#             if user:
+#                 if hashlib.sha256(password.encode()).hexdigest() == user[0]:
+#                     return render_template("home.html")
+#                 else:
+#                     return render_template('login.html', message='Invalid password')
+#             else:
+#                 return render_template('login.html', message='Invalid username')
+#         else:
+#             return render_template('login.html',message="haha, i fixed that bug hahahaha")
+        
+#     return render_template("login.html")
+
+@app.route('/register', methods=["GET", "POST"])
+def register():
+    if request.method == "GET":
+        return render_template('register.html')
+    new_password = request.form.get("new_password")
+    confirm_password = request.form.get("confirm_password")
+    if new_password != confirm_password:
+        return render_template('register.html', message='Passwords do not match.')
+    if request.method == "POST":
+        new_username = request.form.get("new_username")
+        new_password = request.form.get("new_password")
+        if not new_username or not new_password:
+            return render_template('register.html', message='Please enter both a username and password.')
+        hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
+        try:
+            cursor.execute("SELECT id FROM users WHERE username = %s", (new_username,))
+            if cursor.fetchone():
+                return render_template('register.html', message='Username already exists. Please choose a different one.')
+            cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (new_username, hashed_password))
+            connection.commit()
+            
+            session['logged_in'] = True
+            session['username'] = new_username
+            return redirect(url_for('index'))  
+        except mysql.connector.Error as e:
+            print(f"Database error during registration: {e}")
+            return render_template('register.html', message='An error occurred during registration. Please try again.')
+@app.route('/index')
+def index():
+    return render_template('index.html')
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    session.pop('username', None)
+    return redirect(url_for('landing_page')) 
+
 @app.route('/login', methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        if username!='':
-            cursor.execute("SELECT password FROM users WHERE username=%s", (username,))
-            user = cursor.fetchone()
-
-            if user:
-                if hashlib.sha256(password.encode()).hexdigest() == user[0]:
-                    return render_template("home.html")
-                else:
-                    return render_template('login.html', message='Invalid password')
-            else:
-                return render_template('login.html', message='Invalid username')
-        else:
-            return render_template('login.html',message="haha, i fixed that bug hahahaha")
+        remember = request.form.get("remember")
         
-    return render_template("login.html")
+        if not username:
+             return render_template('login.html', message='Please enter a username.')
+        
+        cursor.execute("SELECT password FROM users WHERE username=%s", (username,))
+        user = cursor.fetchone()
 
+        if user:
+            if hashlib.sha256(password.encode()).hexdigest() == user[0]:
+                session['logged_in'] = True
+                session['username'] = username
+                return redirect(url_for('home'))
+            else:
+                return render_template('login.html', message='Invalid password')
+        else:
+            return render_template('login.html', message='Invalid username')
+    return render_template("login.html")
 
 @app.route('/create_user', methods=["POST"])
 def create_user():
@@ -185,7 +254,7 @@ def user():
                 )
                 cursor.execute(insert_statement, data)
                 connection.commit()
-                print("data entered sucessfully!!! ")
+                print("data entered sucessfully! ")
                 
             else:
                 print("Department ID not found for department:", department)
@@ -517,11 +586,46 @@ def user():
     else:
         return render_template("user.html", message='Input not found')
 
+@app.route('/home')
+@login_required
+def home():
+    tables_to_display = {
+        'Journal': 'Journal Paper',
+        'Conference': 'Conference Paper',
+        'BookChapter': 'Book Chapter',
+        'Patent': 'Patent Filing'
+    }
+    
+    all_documents = []
+    
+    for table_name, doc_type in tables_to_display.items():
+        try:
+            if table_name == 'Patent':
+                query = f"SELECT TITLE, PRINCIPAL_INVESTIGATION AS AUTHORS, YEAR_OF_PUBLICATION AS DATE, '{doc_type}' as DOC_TYPE, id FROM {table_name} ORDER BY YEAR_OF_PUBLICATION DESC LIMIT 3"
+            else:
+                query = f"SELECT TITLE, AUTHORS, YEAR_OF_PUBLICATION AS DATE, '{doc_type}' as DOC_TYPE, id FROM {table_name} ORDER BY YEAR_OF_PUBLICATION DESC LIMIT 3"
+            cursor.execute(query)
+            table_documents = cursor.fetchall()
+            for doc in table_documents:
+                all_documents.append({
+                    'id': doc[4],
+                    'title': doc[0],
+                    'authors': doc[1],
+                    'date': doc[2],
+                    'type': doc[3]
+                })
 
+        except mysql.connector.Error as e:
+            print(f"Error fetching data from table {table_name}: {e}")
+            continue
+
+    all_documents.sort(key=lambda x: x['date'], reverse=True)
+    recent_documents = all_documents[:10]
+    return render_template("home.html", documents=recent_documents)
 @app.route('/landing_page',methods=['GET','POST'])
 def landing_page():
     if request.method=="POST":
-      return  redirect(url_for(login))
+      return  redirect(url_for('login'))
     else:
       return render_template("landing_page.html")
 

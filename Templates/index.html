@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataNest | Repository Explorer</title>
+    <link rel="icon" type="image/x-icon" href='{{url_for('static',filename='images/icon.jpeg')}}'>
+    
+    <style>
+        /* --- Shared Styling --- */
+        :root {
+            --color-primary: #0077B6; /* Deep Blue (IEEE Blue is often lighter, but keeping your primary) */
+            --color-secondary: #00B4D8; /* Light Blue */
+            --color-background: #F8F9FA;
+            --color-text-dark: #212529;
+            --color-text-light: #6C757D;
+            --color-link: #0077B6;
+            --color-border: #E0E0E0;
+            --color-card-bg: white;
+            --color-shadow: rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            background-color: var(--color-background);
+            color: var(--color-text-dark);
+        }
+
+        /* --- Header/Navigation --- */
+        .header {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 25px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav a:hover {
+            color: var(--color-secondary);
+        }
+
+        /* --- Main Layout: Grid for Search/Results --- */
+        .main-content {
+            display: flex;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* --- Sidebar (Refinements) --- */
+        .sidebar {
+            width: 280px;
+            margin-right: 30px;
+            padding: 20px;
+            background: var(--color-card-bg);
+            border-radius: 6px;
+            box-shadow: 0 1px 3px var(--color-shadow);
+            flex-shrink: 0; /* Prevents sidebar from shrinking */
+        }
+        
+        .filter-section {
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .filter-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .filter-section h4 {
+            font-size: 1.0rem;
+            color: var(--color-text-dark);
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+        
+        .filter-section label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            cursor: pointer;
+            color: var(--color-text-light);
+        }
+        .filter-section label:hover {
+            color: var(--color-link);
+        }
+
+        /* --- Search and Results Area --- */
+        .results-area {
+            flex-grow: 1;
+        }
+        
+        /* Search Bar */
+        .search-container {
+            display: flex;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px var(--color-shadow);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .search-container input[type="text"] {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--color-border);
+            border-right: none;
+            font-size: 1rem;
+            outline: none;
+        }
+        .search-container button {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .search-container button:hover {
+            background-color: #005f93;
+        }
+
+        /* Results Counter/Sort */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--color-border);
+        }
+        .results-header p {
+            font-weight: 600;
+            color: var(--color-text-dark);
+        }
+
+        /* Document Item */
+        .document-item {
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: box-shadow 0.2s;
+        }
+        .document-item:hover {
+            box-shadow: 0 4px 8px var(--color-shadow);
+        }
+
+        .doc-title a {
+            font-size: 1.3rem;
+            color: var(--color-link);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .doc-title a:hover {
+            text-decoration: underline;
+        }
+
+        .doc-meta {
+            font-size: 0.95rem;
+            color: var(--color-text-light);
+            margin: 5px 0 10px 0;
+        }
+        .doc-meta span {
+            margin-right: 15px;
+        }
+        .doc-type {
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-right: 15px;
+        }
+
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="logo">DataNest Explorer</h1>
+        <nav class="nav">
+            <a href="{{ url_for('index') }}">Search</a> 
+            <a href="{{ url_for('user') }}">Submit</a> 
+            <a href="{{ url_for('admin') }}">Admin</a> 
+            <a href="{{ url_for('logout') }}">Logout ({{ session.get('username', 'Faculty') }})</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="sidebar">
+            <h3>Refine Your Search</h3>
+            
+            <form action="{{ url_for('index') }}" method="get">
+                <div class="filter-section">
+                    <h4>Document Type</h4>
+                    <label><input type="checkbox" name="type" value="Journal" checked> Journals ({{ total_journals if total_journals is defined else '?' }})</label>
+                    <label><input type="checkbox" name="type" value="Conference"> Conferences ({{ total_conferences if total_conferences is defined else '?' }})</label>
+                    <label><input type="checkbox" name="type" value="BookChapter"> Book Chapters</label>
+                    <label><input type="checkbox" name="type" value="Patent"> Patents</label>
+                </div>
+                
+                <div class="filter-section">
+                    <h4>Department</h4>
+                    <label><input type="checkbox" name="dept" value="AIML"> AIML</label>
+                    <label><input type="checkbox" name="dept" value="CSE"> CSE</label>
+                    <label><input type="checkbox" name="dept" value="ISE"> ISE</label>
+                    </div>
+                
+                <div class="filter-section">
+                    <h4>Publication Year</h4>
+                    <label><input type="checkbox" name="year" value="2025"> 2025</label>
+                    <label><input type="checkbox" name="year" value="2024"> 2024</label>
+                    <label><input type="checkbox" name="year" value="2023"> 2023</label>
+                </div>
+
+                <button type="submit" style="width: 100%; padding: 10px; background-color: var(--color-secondary); border: none; color: white; border-radius: 4px; cursor: pointer;">Apply Filters</button>
+            </form>
+        </div>
+
+        <div class="results-area">
+            
+            <form action="{{ url_for('index') }}" method="get" class="search-container">
+                <input type="text" name="query" placeholder="Search by Title, Author, Keyword, or ISSN/ISBN..." value="{{ search_query if search_query is defined }}">
+                <button type="submit">Search</button>
+            </form>
+            
+            <div class="results-header">
+                <p>{{ documents|length if documents is defined else 0 }} results found.</p>
+                <select name="sort" onchange="this.form.submit()">
+                    <option value="relevance">Sort by Relevance</option>
+                    <option value="newest">Sort by Newest First</option>
+                    <option value="oldest">Sort by Oldest First</option>
+                </select>
+            </div>
+
+            <div class="document-list">
+                {% if documents %}
+                    {% for doc in documents %}
+                    <div class="document-item">
+                        <div class="doc-title">
+                            <a href="/document/{{ doc.id }}">{{ doc.title }}</a>
+                        </div>
+                        <div class="doc-meta">
+                            <span class="doc-type">{{ doc.type }}</span>
+                            <span>**Authors:** {{ doc.authors }}</span> 
+                            <span>**Published:** {{ doc.date }}</span>
+                        </div>
+                        <p style="font-size: 0.9rem; color: var(--color-text-dark);">
+                            *A short snippet of the abstract or a relevant keyword list would go here...*
+                        </p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 50px; background: white; border-radius: 6px;">
+                        <h4 style="color: var(--color-primary);">No Results Found</h4>
+                        <p>Try broadening your search or resetting the filters.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button style="padding: 8px 15px; border: 1px solid var(--color-border); background: white; cursor: pointer;">&larr; Previous</button>
+                <span style="margin: 0 15px;">Page 1 of 10</span>
+                <button style="padding: 8px 15px; border: 1px solid var(--color-border); background: white; cursor: pointer;">Next &rarr;</button>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
