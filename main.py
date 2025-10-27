@@ -89,11 +89,12 @@ def register():
             cursor.execute("SELECT id FROM users WHERE username = %s", (new_username,))
             if cursor.fetchone():
                 return render_template('register.html', message='Username already exists. Please choose a different one.')
-            cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (new_username, hashed_password))
+            cursor.execute("INSERT INTO users (username, password, role) VALUES (%s, %s, 'user')", (new_username, hashed_password))
             connection.commit()
             
             session['logged_in'] = True
             session['username'] = new_username
+            session['role'] = 'user'
             return redirect(url_for('index'))  
         except mysql.connector.Error as e:
             print(f"Database error during registration: {e}")
@@ -117,13 +118,16 @@ def login():
         if not username:
              return render_template('login.html', message='Please enter a username.')
         
-        cursor.execute("SELECT password FROM users WHERE username=%s", (username,))
-        user = cursor.fetchone()
-
+        cursor.execute("SELECT password, role FROM users WHERE username=%s", (username,))
+        user_data = cursor.fetchone()
+        if user_data:
+            hashed_password = user_data[0]
+            role = user_data[1]
         if user:
             if hashlib.sha256(password.encode()).hexdigest() == user[0]:
                 session['logged_in'] = True
                 session['username'] = username
+                session['role'] = role
                 return redirect(url_for('home'))
             else:
                 return render_template('login.html', message='Invalid password')
@@ -629,7 +633,37 @@ def landing_page():
     else:
       return render_template("landing_page.html")
 
+# define the permissions map:
+PERMISSION_MAP = {
+    'admin': {
+        'view_all': True, 
+        'edit_own': True, 
+        'edit_all': True,
+        'manage_users': True,
+        'submit_data': True
+    },
+    'editor': {
+        'view_all': True, 
+        'edit_own': True,
+        'edit_all': True,
+        'manage_users': False,
+        'submit_data': True
+    },
+    'user': {
+        'view_all': True, 
+        'edit_own': True,
+        'edit_all': False,
+        'manage_users': False,
+        'submit_data': True
+    }
+}
 
+def user_has_permission(permission_key):
+    """Checks if the logged-in user has a specific permission."""
+    role = session.get('role')
+    if role in PERMISSION_MAP:
+        return PERMISSION_MAP[role].get(permission_key, False)
+    return False
 
 
 if __name__ == "__main__":
